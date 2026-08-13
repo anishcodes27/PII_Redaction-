@@ -169,9 +169,11 @@ def main() -> None:
                 status_box.update(label="✅ **Redaction Completed Successfully!**", state="complete", expanded=False)
 
             except Exception as e:
+                import traceback
                 progress_bar.empty()
                 status_box.update(label="❌ Redaction Failed", state="error")
-                st.error(f"❌ An error occurred during document processing: {str(e)}")
+                st.error(f"❌ An error occurred: {str(e)}")
+                st.code(traceback.format_exc())
                 return
 
         st.balloons()

@@ -97,6 +97,10 @@ def main() -> None:
         status_box = st.status("⏳ **Processing Document in Progress...** Please wait while the NLP engine scans paragraphs and tables.", expanded=True)
 
         with status_box:
+            st.write("🔍 Initializing PII Detection Engine...")
+            detector = get_hybrid_detector()
+            replacer = get_faker_replacer()
+
             st.write("📄 Extracting text segments from Word document...")
             progress_bar = st.progress(0, text="Reading document text segments...")
 

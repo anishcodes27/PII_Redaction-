@@ -1,12 +1,12 @@
 # Enterprise PII Redaction Tool
 
-A modular Python library and Streamlit web application for detecting and redacting Personally Identifiable Information (PII) from `.docx` documents. Replaces detected PII entities with realistic synthetic data via `Faker` while preserving run-level Word formatting.
+A production-ready, modular Python CLI tool designed to detect and redact 9 specific types of Personally Identifiable Information (PII) from `.docx` documents. Replaces detected PII entities with realistic synthetic data using `Faker` while preserving original Word formatting.
 
 ---
 
-## 1. Core Architecture & Detection Strategy
+## 1. Core Architecture & Hybrid Pipeline Strategy
 
-The engine uses a **3-Layer Hybrid Pipeline** to balance high precision on structured formats with high recall on contextual prose.
+The tool implements a **3-Layer Hybrid Pipeline** to balance high precision on structured formats with high recall on contextual prose.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -45,11 +45,11 @@ The engine uses a **3-Layer Hybrid Pipeline** to balance high precision on struc
 ```
 
 ### Detection Layers
-- **Regex Layer**: Compiled patterns for structured identifiers (`SSN`, `CREDIT_CARD`, `EMAIL`, `PHONE`, `IP_ADDRESS`, `DATE_OF_BIRTH`). Credit cards are validated against the **Luhn Algorithm** to filter false positives like internal account numbers.
+- **Regex Layer**: Compiled patterns for structured identifiers (`SSN`, `CREDIT_CARD`, `EMAIL`, `PHONE`, `IP_ADDRESS`, `DATE_OF_BIRTH`). Credit card numbers are validated against the **Luhn Algorithm** to filter false positives like invoice/account numbers.
 - **spaCy NER (`en_core_web_lg`)**: Contextual entity recognition for `PERSON`, `ORG`, `ADDRESS` (mapped from `GPE`/`LOC`/`FAC`).
 - **Microsoft Presidio (`AnalyzerEngine`)**: Secondary validation layer providing confidence scores and entity verification.
 
-### Overlap & Conflict Resolution
+### Overlap Resolution & False-Positive Filtering
 When multiple layers detect overlapping character spans, `_resolve_overlaps()` applies:
 1. **Longest-Span Priority**: Selects the broadest matching substring.
 2. **Score Preference**: Resolves equal-length overlaps using detector confidence.
@@ -76,31 +76,31 @@ To maintain document coherence, `FakerReplacer` utilizes a `ConsistencyCache`. I
 
 ---
 
-## 3. Project Structure
+## 3. Clean Project Structure
 
 ```
 pii_redaction/
-├── app.py                  # Streamlit web dashboard
-├── redact_pii.py           # Core CLI orchestrator
+├── redact_pii.py           # Main CLI orchestrator
 ├── evaluate.py             # Benchmark evaluation engine
 ├── pii_detector.py         # Multi-layered detection pipeline
-├── pii_replacer.py         # Faker replacement & consistency mapping
-├── docx_handler.py         # DOCX run-level reader & writer
+├── pii_replacer.py         # Faker replacement & consistency engine
+├── docx_handler.py         # Word document run-level parser & writer
 ├── config.py               # Pattern definitions, model configs, blocklist
-├── requirements.txt        # Pinned dependencies
+├── requirements.txt        # Dependencies
+├── README.md               # Documentation & instructions
 ├── data/
 │   └── Red Herring Prospectus.docx
-├── output/
-│   ├── Redacted_Red_Herring_Prospectus.docx
-│   ├── predictions.json
-│   └── evaluation_report.md
-└── evaluation/
-    └── benchmark.json      # Ground-truth annotations
+├── evaluation/
+│   └── benchmark.json      # Ground-truth annotations
+└── output/
+    ├── Redacted_Red_Herring_Prospectus.docx
+    ├── predictions.json
+    └── evaluation_report.md
 ```
 
 ---
 
-## 4. Environment Setup
+## 4. Setup & Execution
 
 ### Prerequisites
 - Python 3.10+
@@ -108,41 +108,19 @@ pii_redaction/
 ### Installation
 
 ```bash
-# Clone and enter project directory
+# Navigate to project root
 cd pii_redaction
 
 # Create virtual environment
 python3 -m venv .venv
 source .venv/bin/activate
 
-# Upgrade packaging tools and install requirements
-pip install --upgrade pip setuptools wheel
+# Install dependencies and download spaCy model
 pip install -r requirements.txt
+python -m spacy download en_core_web_lg
 ```
 
-> **Note**: `requirements.txt` includes a direct wheel link for `en_core_web_lg-3.7.1`. No manual model download step is required.
-
----
-
-## 5. Usage Guide
-
-### Option A: Streamlit Web Dashboard
-
-Launch the web interface for interactive document upload, PII selection, real-time metrics, and download:
-
-```bash
-streamlit run app.py
-```
-
-- Access at `http://localhost:8501`.
-- Drag-and-drop `.docx` files.
-- Toggle target entity types via sidebar checkboxes.
-- View live metric cards and per-entity detection bar charts.
-- Download the sanitized output file (`Redacted_<original_name>.docx`).
-
-### Option B: CLI Batch Execution
-
-Run redaction directly from the terminal:
+### Running Redaction Script
 
 ```bash
 python redact_pii.py \
@@ -151,19 +129,7 @@ python redact_pii.py \
     --predictions-out "output/predictions.json"
 ```
 
-CLI Arguments:
-- `--input`: Input `.docx` file path.
-- `--output`: Output `.docx` file path.
-- `--predictions-out`: Path to write detection metadata JSON.
-- `--log-level`: Logging verbosity (`DEBUG`, `INFO`, `WARNING`, `ERROR`).
-
----
-
-## 6. Evaluation & Metrics Calculation
-
-`evaluate.py` measures detection performance by matching predicted entity spans against `evaluation/benchmark.json`.
-
-### Run Evaluation
+### Running Evaluation Script
 
 ```bash
 python evaluate.py \
@@ -172,17 +138,20 @@ python evaluate.py \
     --report output/evaluation_report.md
 ```
 
-### Metrics Definitions
-- **Precision**: $\frac{TP}{TP + FP}$ — Fraction of detected entities that are true PII.
-- **Recall**: $\frac{TP}{TP + FN}$ — Fraction of ground-truth PII entities successfully detected.
-- **F1-Score**: $2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}$ — Harmonic mean.
-- **Accuracy**: $\frac{TP}{TP + FP + FN}$ — Exact span match rate.
+---
 
-*Matching is evaluated on normalized `(entity_type, text)` pairs across document segments.*
+## 5. Evaluation & Performance Analysis
+
+The evaluation script (`evaluate.py`) compares model predictions against `evaluation/benchmark.json` to calculate metrics:
+
+- **Precision**: $\frac{TP}{TP + FP}$ — Fraction of detected entities that are true PII.
+- **Recall**: $\frac{TP}{TP + FN}$ — Fraction of total ground-truth PII entities successfully detected.
+- **F1-Score**: $2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}$ — Harmonic mean.
+- **Accuracy**: $\frac{TP}{TP + FP + FN}$ — Exact span match rate across considered spans.
 
 ---
 
-## 7. Technical Trade-offs & Limitations
+## 6. Technical Trade-offs & Limitations
 
 1. **Format Preservation vs. Run Splitting**:
    - `python-docx` breaks paragraph text into `Run` objects based on inline formatting changes (bold, italic, font styles). Replacing substrings across run boundaries requires clearing trailing runs while mutating the leading run's text node to maintain font styles.

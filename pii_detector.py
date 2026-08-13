@@ -130,20 +130,14 @@ class NERDetector:
 class PresidioDetector:
     """
     Wraps Microsoft Presidio's AnalyzerEngine for validated PII detection.
-    Presidio internally uses spaCy and pattern-based recognizers.
+    Falls back gracefully to default recognizers without triggering spacy downloads on cloud.
     """
 
     def __init__(self) -> None:
         try:
-            configuration = {
-                "nlp_engine_name": "spacy",
-                "models": [{"lang_code": "en", "model_name": SPACY_MODEL}],
-            }
-            provider = NlpEngineProvider(nlp_configuration=configuration)
-            nlp_engine = provider.create_engine()
-            self._analyzer = AnalyzerEngine(nlp_engine=nlp_engine, supported_languages=["en"])
-        except Exception:
             self._analyzer = AnalyzerEngine()
+        except Exception:
+            self._analyzer = None
 
 
     def detect(self, text: str) -> List[PIISpan]:

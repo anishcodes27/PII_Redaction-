@@ -97,12 +97,16 @@ class RegexDetector:
 
 class NERDetector:
     """
-    Uses spaCy's large English NER model to detect contextual named entities
+    Uses spaCy's English NER model to detect contextual named entities
     (persons, organisations, geopolitical entities, locations, facilities).
     """
 
     def __init__(self) -> None:
-        self._nlp = spacy.load(SPACY_MODEL)
+        try:
+            self._nlp = spacy.load(SPACY_MODEL)
+        except Exception:
+            spacy.cli.download(SPACY_MODEL)
+            self._nlp = spacy.load(SPACY_MODEL)
 
     def detect(self, text: str) -> List[PIISpan]:
         """Run spaCy NER on text and map relevant entity labels to internal types."""
@@ -131,6 +135,11 @@ class PresidioDetector:
     """
 
     def __init__(self) -> None:
+        try:
+            spacy.load(SPACY_MODEL)
+        except Exception:
+            spacy.cli.download(SPACY_MODEL)
+
         configuration = {
             "nlp_engine_name": "spacy",
             "models": [{"lang_code": "en", "model_name": SPACY_MODEL}],
@@ -138,6 +147,7 @@ class PresidioDetector:
         provider = NlpEngineProvider(nlp_configuration=configuration)
         nlp_engine = provider.create_engine()
         self._analyzer = AnalyzerEngine(nlp_engine=nlp_engine, supported_languages=["en"])
+
 
     def detect(self, text: str) -> List[PIISpan]:
         """Run Presidio analysis on text and return filtered PIISpan results."""

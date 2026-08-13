@@ -1,0 +1,177 @@
+[
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 20,
+    "entity_type": "PERSON",
+    "text": "Kushal Subbayya Hegde"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 12,
+    "entity_type": "PERSON",
+    "text": "Kushal Hegde"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 18,
+    "entity_type": "PERSON",
+    "text": "Rajesh Kushal Hegde"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 17,
+    "entity_type": "PERSON",
+    "text": "Rohit Kushal Hegde"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 18,
+    "entity_type": "PERSON",
+    "text": "Rakhi Girija Shetty"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 15,
+    "entity_type": "PERSON",
+    "text": "Sarthak Malvadkar"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 14,
+    "entity_type": "PERSON",
+    "text": "Sandesh Bhagwat"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 10,
+    "entity_type": "PERSON",
+    "text": "Amod Joshi"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 24,
+    "entity_type": "ORG",
+    "text": "KSH INTERNATIONAL LIMITED"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 27,
+    "entity_type": "ORG",
+    "text": "KSH International Private Limited"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 35,
+    "entity_type": "ORG",
+    "text": "Bhandary Metal Extrusion Private Limited"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 30,
+    "entity_type": "EMAIL",
+    "text": "cs.connect@kshinternational.com"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 38,
+    "entity_type": "EMAIL",
+    "text": "Sarthak.malvadkar@kshinternational.com"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 22,
+    "entity_type": "EMAIL",
+    "text": "ksh.ipo@nuvama.com"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 22,
+    "entity_type": "EMAIL",
+    "text": "ksh@icicisecurities.com"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 18,
+    "entity_type": "PHONE",
+    "text": "+ 91 20 4505 3237"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 17,
+    "entity_type": "PHONE",
+    "text": "+ 91 20 45053237"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 15,
+    "entity_type": "PHONE",
+    "text": "+91 22 40094400"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 16,
+    "entity_type": "PHONE",
+    "text": "+91 22 6807 7100"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 11,
+    "entity_type": "ADDRESS",
+    "text": "Maharashtra"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 6,
+    "entity_type": "ADDRESS",
+    "text": "Bombay"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 6,
+    "entity_type": "ADDRESS",
+    "text": "Mumbai"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 4,
+    "entity_type": "ADDRESS",
+    "text": "Pune"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 5,
+    "entity_type": "ADDRESS",
+    "text": "India"
+  },
+  {
+    "segment_index": 0,
+    "start": 0,
+    "end": 16,
+    "entity_type": "ADDRESS",
+    "text": "Village Birdewadi"
+  }
+]

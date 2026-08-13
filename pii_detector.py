@@ -105,8 +105,7 @@ class NERDetector:
         try:
             self._nlp = spacy.load(SPACY_MODEL)
         except Exception:
-            spacy.cli.download(SPACY_MODEL)
-            self._nlp = spacy.load(SPACY_MODEL)
+            self._nlp = spacy.blank("en")
 
     def detect(self, text: str) -> List[PIISpan]:
         """Run spaCy NER on text and map relevant entity labels to internal types."""
@@ -136,17 +135,15 @@ class PresidioDetector:
 
     def __init__(self) -> None:
         try:
-            spacy.load(SPACY_MODEL)
+            configuration = {
+                "nlp_engine_name": "spacy",
+                "models": [{"lang_code": "en", "model_name": SPACY_MODEL}],
+            }
+            provider = NlpEngineProvider(nlp_configuration=configuration)
+            nlp_engine = provider.create_engine()
+            self._analyzer = AnalyzerEngine(nlp_engine=nlp_engine, supported_languages=["en"])
         except Exception:
-            spacy.cli.download(SPACY_MODEL)
-
-        configuration = {
-            "nlp_engine_name": "spacy",
-            "models": [{"lang_code": "en", "model_name": SPACY_MODEL}],
-        }
-        provider = NlpEngineProvider(nlp_configuration=configuration)
-        nlp_engine = provider.create_engine()
-        self._analyzer = AnalyzerEngine(nlp_engine=nlp_engine, supported_languages=["en"])
+            self._analyzer = AnalyzerEngine()
 
 
     def detect(self, text: str) -> List[PIISpan]:

@@ -90,63 +90,76 @@ def main() -> None:
         detector = get_hybrid_detector()
         replacer = FakerReplacer()
 
-        with st.spinner("Processing document and scanning for PII entities..."):
-            try:
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp_in:
-                    tmp_in.write(uploaded_file.getvalue())
-                    tmp_in_path = Path(tmp_in.name)
+        progress_bar = st.progress(0, text="Initializing PII Detection Pipeline...")
 
-                reader = DocxReader(tmp_in_path)
-                segments = reader.extract_segments()
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp_in:
+                tmp_in.write(uploaded_file.getvalue())
+                tmp_in_path = Path(tmp_in.name)
 
-                if not segments:
-                    st.warning("⚠️ The uploaded document appears to be empty or contains no readable text.")
-                    return
+            reader = DocxReader(tmp_in_path)
+            segments = reader.extract_segments()
 
-                seen_originals = {}
-                entity_counts = defaultdict(int)
-                prediction_records = []
-
-                for seg_idx, seg in enumerate(segments):
-                    spans: list[PIISpan] = detector.detect(seg.text)
-                    for span in spans:
-                        if span.entity_type not in selected_entities:
-                            continue
-                        original = span.text.strip()
-                        if not original:
-                            continue
-                        if original not in seen_originals:
-                            fake = replacer.replace(span.entity_type, original)
-                            seen_originals[original] = fake
-                        entity_counts[span.entity_type] += 1
-                        prediction_records.append(
-                            EntityRecord(
-                                segment_index=seg_idx,
-                                start=span.start,
-                                end=span.end,
-                                entity_type=span.entity_type,
-                                text=original,
-                            )
-                        )
-
-                replacements = list(seen_originals.items())
-
-                writer = DocxWriter(reader.document)
-                writer.apply_replacements(replacements)
-
-                out_filename = f"Redacted_{uploaded_file.name}"
-                tmp_out_path = Path(tempfile.gettempdir()) / out_filename
-                writer.save(tmp_out_path)
-
-                with open(tmp_out_path, "rb") as f_out:
-                    redacted_bytes = f_out.read()
-
-                tmp_in_path.unlink(missing_ok=True)
-                tmp_out_path.unlink(missing_ok=True)
-
-            except Exception as e:
-                st.error(f"❌ An error occurred during document processing: {str(e)}")
+            if not segments:
+                st.warning("⚠️ The uploaded document appears to be empty or contains no readable text.")
+                progress_bar.empty()
                 return
+
+            seen_originals = {}
+            entity_counts = defaultdict(int)
+            prediction_records = []
+
+            total_segments = len(segments)
+            for seg_idx, seg in enumerate(segments):
+                if seg_idx % 10 == 0 or seg_idx == total_segments - 1:
+                    pct = int(((seg_idx + 1) / total_segments) * 70)
+                    progress_bar.progress(pct, text=f"Scanning segment {seg_idx + 1}/{total_segments} for PII...")
+
+                spans: list[PIISpan] = detector.detect(seg.text)
+                for span in spans:
+                    if span.entity_type not in selected_entities:
+                        continue
+                    original = span.text.strip()
+                    if not original:
+                        continue
+                    if original not in seen_originals:
+                        fake = replacer.replace(span.entity_type, original)
+                        seen_originals[original] = fake
+                    entity_counts[span.entity_type] += 1
+                    prediction_records.append(
+                        EntityRecord(
+                            segment_index=seg_idx,
+                            start=span.start,
+                            end=span.end,
+                            entity_type=span.entity_type,
+                            text=original,
+                        )
+                    )
+
+            replacements = list(seen_originals.items())
+
+            progress_bar.progress(85, text=f"Applying {len(replacements)} synthetic replacements to Word runs...")
+            writer = DocxWriter(reader.document)
+            writer.apply_replacements(replacements)
+
+            progress_bar.progress(95, text="Saving redacted output document...")
+            out_filename = f"Redacted_{uploaded_file.name}"
+            tmp_out_path = Path(tempfile.gettempdir()) / out_filename
+            writer.save(tmp_out_path)
+
+            with open(tmp_out_path, "rb") as f_out:
+                redacted_bytes = f_out.read()
+
+            tmp_in_path.unlink(missing_ok=True)
+            tmp_out_path.unlink(missing_ok=True)
+
+            progress_bar.progress(100, text="Processing complete!")
+            progress_bar.empty()
+
+        except Exception as e:
+            progress_bar.empty()
+            st.error(f"❌ An error occurred during document processing: {str(e)}")
+            return
 
         st.balloons()
         st.subheader("📊 Detection & Replacement Dashboard")

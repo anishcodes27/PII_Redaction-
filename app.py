@@ -28,10 +28,17 @@ st.set_page_config(
 )
 
 
+# Pre-warm detection models on app load
 @st.cache_resource
 def get_hybrid_detector() -> HybridDetector:
     """Cache the HybridDetector instance across app reruns."""
     return HybridDetector()
+
+
+@st.cache_resource
+def get_faker_replacer() -> FakerReplacer:
+    """Cache the FakerReplacer instance across app reruns."""
+    return FakerReplacer()
 
 
 def main() -> None:
@@ -41,6 +48,9 @@ def main() -> None:
         "and replace it with consistent, realistic synthetic data powered by **Faker**, **spaCy NER**, and **Microsoft Presidio**."
     )
     st.divider()
+
+    detector = get_hybrid_detector()
+    replacer = get_faker_replacer()
 
     st.sidebar.header("⚙️ Configuration")
 
@@ -90,10 +100,7 @@ def main() -> None:
         status_box = st.status("⏳ **Processing Document in Progress...** Please wait while the NLP engine scans paragraphs and tables.", expanded=True)
 
         with status_box:
-            st.write("🔍 Loading hybrid NLP models (spaCy + Presidio)...")
-            detector = get_hybrid_detector()
-            replacer = FakerReplacer()
-
+            st.write("📄 Extracting text segments from Word document...")
             progress_bar = st.progress(0, text="Reading document text segments...")
 
             try:

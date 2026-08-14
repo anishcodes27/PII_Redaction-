@@ -17,13 +17,7 @@ ENTITY_TYPES = {
     "IP_ADDRESS": "IP_ADDRESS",
 }
 
-import spacy
-
-try:
-    spacy.load("en_core_web_lg")
-    SPACY_MODEL = "en_core_web_lg"
-except Exception:
-    SPACY_MODEL = "en_core_web_sm"
+SPACY_MODEL = "en_core_web_sm"
 
 
 SPACY_ENTITY_MAP = {

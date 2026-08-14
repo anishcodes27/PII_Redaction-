@@ -49,9 +49,6 @@ def main() -> None:
     )
     st.divider()
 
-    detector = get_hybrid_detector()
-    replacer = get_faker_replacer()
-
     st.sidebar.header("⚙️ Configuration")
 
     all_entity_labels = list(ENTITY_TYPES.keys())
